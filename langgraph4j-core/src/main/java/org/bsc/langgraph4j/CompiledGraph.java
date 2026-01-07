@@ -253,7 +253,11 @@ public final class CompiledGraph<State extends AgentState> implements GraphDefin
             var nextNodeCommand = nextNodeId( asNode, branchCheckpoint.getState(), config );
 
             nextNodeId = nextNodeCommand.gotoNode();
-            branchCheckpoint =  branchCheckpoint.updateState( nextNodeCommand.update(), stateGraph.getChannels() );
+            // Original
+            branchCheckpoint =  branchCheckpoint.updateState( nextNodeCommand.update(), stateGraph.getChannels());
+
+            // Fix
+            //branchCheckpoint =  branchCheckpoint.updateState( nextNodeCommand.update(), stateGraph.getChannels() , nextNodeId);
 
         }
         // update checkpoint in saver

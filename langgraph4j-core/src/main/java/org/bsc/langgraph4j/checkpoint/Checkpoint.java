@@ -100,13 +100,21 @@ public class Checkpoint {
         }
     }
 
-    public Checkpoint updateState(Map<String,Object> values, Map<String, Channel<?>> channels ) {
+    public Checkpoint updateState(Map<String,Object> values, Map<String, Channel<?>> channels) {
 
         return new Checkpoint( this.id,
                 AgentState.updateState( this.state, values, channels ),
                 this.nodeId,
                 this.nextNodeId );
     }
+
+//    public Checkpoint updateState(Map<String,Object> values, Map<String, Channel<?>> channels, String nextNodeId ) {
+//
+//        return new Checkpoint( this.id,
+//                AgentState.updateState( this.state, values, channels ),
+//                this.nodeId,
+//                nextNodeId );
+//    }
 
     @Override
     public String toString() {
