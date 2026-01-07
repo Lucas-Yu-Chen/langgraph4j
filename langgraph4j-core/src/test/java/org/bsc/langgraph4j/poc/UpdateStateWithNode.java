@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -36,7 +35,7 @@ public class UpdateStateWithNode {
         System.out.println("First Time execute Done , Execute order NodeA - NodeB - END");
 
         // Resume from NODE_B
-        System.out.println("Resume execute Done , Resume from NodeB , and Set NEXT_NODE , want to route to FEEDBACK_NODE");
+        System.out.println("Resume the same session , Set Resume from NodeB , and Set NEXT_NODE , want to route to FEEDBACK_NODE");
         RunnableConfig existedConfig = RunnableConfig.builder()
                 .threadId("1")
                 .build();
@@ -105,7 +104,7 @@ public class UpdateStateWithNode {
     public static CompiledGraph compiledGraph() throws GraphStateException {
         var saver = new MemorySaver();
         CompileConfig compileConfig = CompileConfig.builder()
-                .interruptBefore("FEEDBACK_NODE")
+//                .interruptBefore("FEEDBACK_NODE")
                 .checkpointSaver(saver)
                 .releaseThread(false)
                 .build();
