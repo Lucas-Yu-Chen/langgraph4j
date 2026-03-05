@@ -69,6 +69,18 @@ public class StreamingTestITest {
                                 .temperature(0.1)
                                 .build())
                         .build()),
+        DEEPSEEK(
+                OpenAiChatModel.builder()
+                        .openAiApi(OpenAiApi.builder()
+                                .baseUrl("https://api.deepseek.com")
+                                .apiKey(System.getenv("DEEPSEEK_API_KEY"))
+                                .build())
+                        .defaultOptions(OpenAiChatOptions.builder()
+                                .model("deepseek-chat")
+                                .logprobs(false)
+                                .temperature(0.1)
+                                .build())
+                        .build()),
         OLLAMA_QWEN3_14B(
                 OllamaChatModel.builder()
                         .ollamaApi( OllamaApi.builder().baseUrl("http://localhost:11434").build() )
@@ -253,6 +265,52 @@ public class StreamingTestITest {
 
         generator.forEachAsync(System.out::println).join();
 
+    }
+
+    @Test
+    public void simpleStreamingGraphTest() throws Exception {
+
+        var chatClient = ChatClient.builder(AiModel.DEEPSEEK.model)
+                .defaultOptions(ToolCallingChatOptions.builder()
+                        .internalToolExecutionEnabled(false)
+                        .build())
+                .defaultSystem("You are a helpful AI Assistant answering questions.")
+                .build();
+
+        // Define a simple node that uses StreamingChatGenerator
+        NodeAction<State> agentNode = state -> {
+            log.info("AgentNode - messages: {}", state.messages());
+
+            var flux = chatClient.prompt()
+                    .messages(state.messages())
+                    .stream()
+                    .chatResponse();
+
+            var generator = StreamingChatGenerator.builder()
+                    .startingNode("agent")
+                    .startingState(state)
+                    .mapResult(response -> Map.of("messages", response.getResult().getOutput()))
+                    .build(flux);
+
+            return Map.of("messages", generator);
+        };
+
+        // Build a simple graph: START -> agent -> END
+        var workflow = new StateGraph<>(State.SCHEMA, new SpringAIStateSerializer<>(State::new))
+                .addNode("agent", node_async(agentNode))
+                .addEdge(START, "agent")
+                .addEdge("agent", END);
+
+        var app = workflow.compile();
+
+        // Stream and iterate through results
+        var inputStream = app.stream(Map.of("messages", new UserMessage("tell me a short joke")));
+
+        System.out.println("=== Streaming Output ===");
+        for (var item : inputStream) {
+            System.out.println(item);
+        }
+        System.out.println("=== End of Stream ===");
     }
 
 }
